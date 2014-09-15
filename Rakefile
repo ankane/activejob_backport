@@ -1,5 +1,5 @@
+require 'bundler/gem_tasks'
 require 'rake/testtask'
-require 'rubygems/package_task'
 
 ACTIVEJOB_ADAPTERS = %w(inline delayed_job qu que queue_classic resque sidekiq sneakers sucker_punch backburner)
 ACTIVEJOB_ADAPTERS -= %w(queue_classic) if defined?(JRUBY_VERSION)
@@ -69,18 +69,4 @@ def run_without_aborting(tasks)
   end
 
   abort "Errors running #{errors.join(', ')}" if errors.any?
-end
-
-
-spec = eval(File.read('activejob_backport.gemspec'))
-
-Gem::PackageTask.new(spec) do |p|
-  p.gem_spec = spec
-end
-
-desc 'Release to rubygems'
-task release: :package do
-  require 'rake/gemcutter'
-  Rake::Gemcutter::Tasks.new(spec).define
-  Rake::Task['gem:push'].invoke
 end
