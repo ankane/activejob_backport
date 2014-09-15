@@ -2,6 +2,8 @@ source 'https://rubygems.org'
 
 gemspec
 
+gem 'activesupport', '~> 4.1.0'
+
 gem 'resque', require: false
 gem 'resque-scheduler', require: false
 gem 'sidekiq', require: false

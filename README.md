@@ -15,3 +15,5 @@ ActiveJob::Base.queue_adapter = :inline # default queue adapter
 ```
 
 See [how to use Active Job](http://edgeguides.rubyonrails.org/active_job_basics.html) and the [official repo](https://github.com/rails/rails/tree/master/activejob)
+
+[![Build Status](https://travis-ci.org/ankane/activejob_backport.png?branch=master)](https://travis-ci.org/ankane/activejob_backport)
