@@ -5,8 +5,12 @@ module ActiveJob
   module QueueAdapter
     extend ActiveSupport::Concern
 
+    included do
+      self.queue_adapter = ActiveJob::QueueAdapters::InlineAdapter
+    end
+
     module ClassMethods
-      mattr_reader(:queue_adapter) { ActiveJob::QueueAdapters::InlineAdapter }
+      mattr_reader(:queue_adapter)
 
       def queue_adapter=(name_or_adapter)
         @@queue_adapter = \
