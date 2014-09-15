@@ -70,7 +70,6 @@ module ActiveJob
 
     class LogSubscriber < ActiveSupport::LogSubscriber
       def enqueue(event)
-        p event.payload
         info do
           job = event.payload[:job]
           "Enqueued #{job.class.name} (Job ID: #{job.job_id}) to #{queue_name(event)}" + args_info(job)
