@@ -1,1 +1,1 @@
-require 'active_job'
+require 'active_job' if !defined?(ActiveJob)
