@@ -25,6 +25,7 @@ require 'active_support'
 require 'active_support/rails'
 require 'active_job/version'
 require 'global_id' if !defined?(GlobalId)
+require 'global_id/railtie' if defined?(Rails)
 require 'active_job/railtie' if defined?(Rails)
 require 'active_support/core_ext/module/attribute_accessors'
 
