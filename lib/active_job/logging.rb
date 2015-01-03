@@ -3,42 +3,24 @@ require 'active_support/tagged_logging'
 require 'active_support/logger'
 
 module ActiveJob
-  module Logging
+  module Logging #:nodoc:
     extend ActiveSupport::Concern
 
     included do
       cattr_accessor(:logger) { ActiveSupport::TaggedLogging.new(ActiveSupport::Logger.new(STDOUT)) }
 
-      if ActiveSupport::VERSION::MINOR > 0
-        around_enqueue do |_, block, _|
-          tag_logger do
-            block.call
-          end
+      around_enqueue do |_, block, _|
+        tag_logger do
+          block.call
         end
+      end
 
-        around_perform do |job, block, _|
-          tag_logger(job.class.name, job.job_id) do
-            payload = {adapter: job.class.queue_adapter, job: job}
-            ActiveSupport::Notifications.instrument("perform_start.active_job", payload.dup)
-            ActiveSupport::Notifications.instrument("perform.active_job", payload) do
-              block.call
-            end
-          end
-        end
-      else
-        around_enqueue do |_, block|
-          tag_logger do
+      around_perform do |job, block, _|
+        tag_logger(job.class.name, job.job_id) do
+          payload = {adapter: job.class.queue_adapter, job: job}
+          ActiveSupport::Notifications.instrument("perform_start.active_job", payload.dup)
+          ActiveSupport::Notifications.instrument("perform.active_job", payload) do
             block.call
-          end
-        end
-
-        around_perform do |job, block|
-          tag_logger(job.class.name, job.job_id) do
-            payload = {adapter: job.class.queue_adapter, job: job}
-            ActiveSupport::Notifications.instrument("perform_start.active_job", payload.dup)
-            ActiveSupport::Notifications.instrument("perform.active_job", payload) do
-              block.call
-            end
           end
         end
       end
@@ -68,7 +50,7 @@ module ActiveJob
         logger.formatter.current_tags.include?("ActiveJob")
       end
 
-    class LogSubscriber < ActiveSupport::LogSubscriber
+    class LogSubscriber < ActiveSupport::LogSubscriber #:nodoc:
       def enqueue(event)
         info do
           job = event.payload[:job]
@@ -93,17 +75,22 @@ module ActiveJob
       def perform(event)
         info do
           job = event.payload[:job]
-          "Performed #{job.class.name} from #{queue_name(event)} in #{event.duration.round(2).to_s}ms"
+          "Performed #{job.class.name} from #{queue_name(event)} in #{event.duration.round(2)}ms"
         end
       end
 
       private
         def queue_name(event)
-          event.payload[:adapter].name.demodulize.gsub('Adapter', '') + "(#{event.payload[:job].queue_name})"
+          event.payload[:adapter].name.demodulize.remove('Adapter') + "(#{event.payload[:job].queue_name})"
         end
 
         def args_info(job)
-          job.arguments.any? ? " with arguments: #{job.arguments.map(&:inspect).join(", ")}" : ""
+          if job.arguments.any?
+            ' with arguments: ' +
+              job.arguments.map { |arg| arg.try(:to_global_id).try(:to_s) || arg.inspect }.join(', ')
+          else
+            ''
+          end
         end
 
         def scheduled_at(event)

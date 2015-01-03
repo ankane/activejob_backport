@@ -29,7 +29,6 @@ module SidekiqJobsManager
                       "--concurrency", "1",
                       "--timeout", "1",
                       "--daemon",
-                      "--verbose"
                       ])
       require 'celluloid'
       require 'sidekiq/scheduled'
@@ -49,8 +48,9 @@ module SidekiqJobsManager
 
   def can_run?
     begin
-      Sidekiq.redis { |conn| conn.connect }
-    rescue => e
+      Sidekiq.redis(&:info)
+      Sidekiq.logger = nil
+    rescue
       return false
     end
     true

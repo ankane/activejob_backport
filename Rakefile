@@ -1,7 +1,7 @@
 require 'bundler/gem_tasks'
 require 'rake/testtask'
 
-ACTIVEJOB_ADAPTERS = %w(inline delayed_job qu que queue_classic resque sidekiq sneakers sucker_punch backburner)
+ACTIVEJOB_ADAPTERS = %w(inline delayed_job qu que queue_classic resque sidekiq sneakers sucker_punch backburner test)
 ACTIVEJOB_ADAPTERS -= %w(queue_classic) if defined?(JRUBY_VERSION)
 
 task default: :test
@@ -20,7 +20,7 @@ namespace :test do
 
   desc 'Run integration tests for all adapters'
   task :integration do
-    run_without_aborting ACTIVEJOB_ADAPTERS.map { |a| "test:integration:#{a}" }
+    run_without_aborting (ACTIVEJOB_ADAPTERS - ['test']).map { |a| "test:integration:#{a}" }
   end
 
   task 'env:integration' do
@@ -35,6 +35,8 @@ namespace :test do
       t.libs << 'test'
       t.test_files = FileList['test/cases/**/*_test.rb']
       t.verbose = true
+      t.warning = true
+      t.ruby_opts = ["--dev"] if defined?(JRUBY_VERSION)
     end
 
     namespace :isolated do
@@ -52,6 +54,8 @@ namespace :test do
         t.libs << 'test'
         t.test_files = FileList['test/integration/**/*_test.rb']
         t.verbose = true
+        t.warning = true
+        t.ruby_opts = ["--dev"] if defined?(JRUBY_VERSION)
       end
     end
   end
