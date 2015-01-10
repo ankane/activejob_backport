@@ -5,7 +5,7 @@ module ActiveJob
     # Includes the ability to override the default queue name and prefix.
     module ClassMethods
       mattr_accessor(:queue_name_prefix)
-      mattr_accessor(:default_queue_name) { "default" }
+      mattr_accessor(:default_queue_name)
 
       # Specifies the name of the queue to process the job on.
       #
@@ -35,6 +35,7 @@ module ActiveJob
       class_attribute :queue_name, instance_accessor: false
       class_attribute :queue_name_delimiter, instance_accessor: false
 
+      self.default_queue_name = 'default'
       self.queue_name = default_queue_name
       self.queue_name_delimiter = '_' # set default delimiter to '_'
     end
