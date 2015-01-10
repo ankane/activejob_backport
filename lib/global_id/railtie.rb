@@ -13,21 +13,8 @@ class GlobalID
     config.global_id = ActiveSupport::OrderedOptions.new
 
     initializer 'global_id' do |app|
-
-      app.config.global_id.app ||= app.railtie_name.remove('_application').dasherize
+      app.config.global_id.app ||= app.railtie_name.sub('_application', '').dasherize
       GlobalID.app = app.config.global_id.app
-
-      app.config.global_id.expires_in ||= 1.month
-      SignedGlobalID.expires_in = app.config.global_id.expires_in
-
-      config.after_initialize do
-        app.config.global_id.verifier ||= begin
-          app.message_verifier(:signed_global_ids)
-        rescue ArgumentError
-          nil
-        end
-        SignedGlobalID.verifier = app.config.global_id.verifier
-      end
 
       ActiveSupport.on_load(:active_record) do
         require 'global_id/identification'

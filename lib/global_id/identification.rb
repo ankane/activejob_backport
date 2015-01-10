@@ -8,10 +8,5 @@ class GlobalID
       @global_id ||= GlobalID.create(self)
     end
     alias to_gid to_global_id
-
-    def to_signed_global_id(options = {})
-      @signed_global_id ||= SignedGlobalID.create(self, options)
-    end
-    alias to_sgid to_signed_global_id
   end
 end
