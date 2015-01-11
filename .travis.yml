@@ -11,5 +11,5 @@ notifications:
 gemfile:
   - Gemfile
   - test/gemfiles/Gemfile.activesupport-4.0.x
-  - test/gemfiles/Gemfile.activesupport-4.0.x
+  - test/gemfiles/Gemfile.activesupport-4.1.x
 sudo: false
