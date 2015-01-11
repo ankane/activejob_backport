@@ -1,6 +1,8 @@
 language: ruby
 rvm:
+  - 2.0
   - 2.1
+  - 2.2
 script: bundle exec rake test
 notifications:
   email:
@@ -9,3 +11,5 @@ notifications:
 gemfile:
   - Gemfile
   - test/gemfiles/Gemfile.activesupport-4.0.x
+  - test/gemfiles/Gemfile.activesupport-4.0.x
+sudo: false
