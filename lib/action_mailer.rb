@@ -1,5 +1,6 @@
+
 #--
-# Copyright (c) 2014-2015 David Heinemeier Hansson
+# Copyright (c) 2004-2015 David Heinemeier Hansson
 #
 # Permission is hereby granted, free of charge, to any person obtaining
 # a copy of this software and associated documentation files (the
@@ -21,21 +22,21 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #++
 
-require 'active_support'
-require 'active_support/rails'
-require 'active_job/version'
-require 'global_id' if !defined?(GlobalId)
-require 'global_id/railtie' if defined?(Rails)
-require 'active_job/railtie' if defined?(Rails)
-require 'active_support/core_ext/module/attribute_accessors'
-require 'action_mailer' if Rails.version >= "4.0" && Rails.version < "4.2.0"
+require 'abstract_controller'
 
-module ActiveJob
+# Common Active Support usage in Action Mailer
+require 'active_support/rails'
+require 'active_support/core_ext/class'
+require 'active_support/core_ext/module/attr_internal'
+require 'active_support/core_ext/string/inflections'
+require 'active_support/lazy_load_hooks'
+
+require 'action_mailer/message_delivery'
+require 'action_mailer/delivery_job'
+
+module ActionMailer
   extend ActiveSupport::Autoload
 
-  autoload :Base
-  autoload :QueueAdapters
-  autoload :ConfiguredJob
-  autoload :TestCase
-  autoload :TestHelper
+  autoload :MessageDelivery
+  autoload :DeliveryJob
 end
