@@ -8,6 +8,7 @@ module ActiveJob
           #Sidekiq::Client does not support symbols as keys
           Sidekiq::Client.push \
             'class' => JobWrapper,
+            'wrapped' => job.class.to_s,
             'queue' => job.queue_name,
             'args'  => [ job.serialize ],
             'retry' => true
@@ -16,6 +17,7 @@ module ActiveJob
         def enqueue_at(job, timestamp)
           Sidekiq::Client.push \
             'class' => JobWrapper,
+            'wrapped' => job.class.to_s,
             'queue' => job.queue_name,
             'args'  => [ job.serialize ],
             'retry' => true,
