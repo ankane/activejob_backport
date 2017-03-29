@@ -1,4 +1,4 @@
-# require 'global_id/railtie'
+require 'global_id/railtie'
 require 'active_job'
 
 module ActiveJob

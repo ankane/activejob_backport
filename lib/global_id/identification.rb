@@ -8,6 +8,5 @@ class GlobalID
       @global_id ||= GlobalID.create(self)
     end
     alias to_gid to_global_id
-
   end
 end

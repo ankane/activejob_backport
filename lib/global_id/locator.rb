@@ -38,7 +38,7 @@ class GlobalID
       def use(app, locator = nil, &locator_block)
         raise ArgumentError, 'No locator provided. Pass a block or an object that responds to #locate.' unless locator || block_given?
 
-        GlobalID.validate_app(app)
+        URI::GID.validate_app(app)
 
         @locators[normalize_app(app)] = locator || BlockLocator.new(locator_block)
       end
@@ -66,9 +66,7 @@ class GlobalID
         end
       end
 
-      def self.default_locator
-        ActiveRecordFinder.new
-      end
+      mattr_reader(:default_locator) { ActiveRecordFinder.new }
 
       class BlockLocator
         def initialize(block)
