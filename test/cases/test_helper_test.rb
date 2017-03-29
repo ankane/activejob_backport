@@ -6,8 +6,6 @@ require 'jobs/logging_job'
 require 'jobs/nested_job'
 
 class EnqueuedJobsTest < ActiveJob::TestCase
-  setup { queue_adapter.perform_enqueued_at_jobs = true }
-
   def test_assert_enqueued_jobs
     assert_nothing_raised do
       assert_enqueued_jobs 1 do
@@ -44,11 +42,16 @@ class EnqueuedJobsTest < ActiveJob::TestCase
     end
   end
 
+  def test_assert_no_enqueued_jobs_with_no_block
+    assert_nothing_raised do
+      assert_no_enqueued_jobs
+    end
+  end
+
   def test_assert_no_enqueued_jobs
     assert_nothing_raised do
       assert_no_enqueued_jobs do
-        # Scheduled jobs are being performed in this context
-        HelloJob.set(wait_until: Date.tomorrow.noon).perform_later('godfrey')
+        HelloJob.perform_now
       end
     end
   end
@@ -84,9 +87,68 @@ class EnqueuedJobsTest < ActiveJob::TestCase
     assert_match(/0 .* but 1/, error.message)
   end
 
+  def test_assert_enqueued_jobs_with_only_option
+    assert_nothing_raised do
+      assert_enqueued_jobs 1, only: HelloJob do
+        HelloJob.perform_later('jeremy')
+        LoggingJob.perform_later
+      end
+    end
+  end
+
+  def test_assert_enqueued_jobs_with_only_option_and_none_sent
+    error = assert_raise ActiveSupport::TestCase::Assertion do
+      assert_enqueued_jobs 1, only: HelloJob do
+        LoggingJob.perform_later
+      end
+    end
+
+    assert_match(/1 .* but 0/, error.message)
+  end
+
+  def test_assert_enqueued_jobs_with_only_option_and_too_few_sent
+    error = assert_raise ActiveSupport::TestCase::Assertion do
+      assert_enqueued_jobs 5, only: HelloJob do
+        HelloJob.perform_later('jeremy')
+        4.times { LoggingJob.perform_later }
+      end
+    end
+
+    assert_match(/5 .* but 1/, error.message)
+  end
+
+  def test_assert_enqueued_jobs_with_only_option_and_too_many_sent
+    error = assert_raise ActiveSupport::TestCase::Assertion do
+      assert_enqueued_jobs 1, only: HelloJob do
+        2.times { HelloJob.perform_later('jeremy') }
+      end
+    end
+
+    assert_match(/1 .* but 2/, error.message)
+  end
+
+  def test_assert_no_enqueued_jobs_with_only_option
+    assert_nothing_raised do
+      assert_no_enqueued_jobs only: HelloJob do
+        LoggingJob.perform_later
+      end
+    end
+  end
+
+  def test_assert_no_enqueued_jobs_with_only_option_failure
+    error = assert_raise ActiveSupport::TestCase::Assertion do
+      assert_no_enqueued_jobs only: HelloJob do
+        HelloJob.perform_later('jeremy')
+        LoggingJob.perform_later
+      end
+    end
+
+    assert_match(/0 .* but 1/, error.message)
+  end
+
   def test_assert_enqueued_job
     assert_enqueued_with(job: LoggingJob, queue: 'default') do
-      NestedJob.set(wait_until: Date.tomorrow.noon).perform_later
+      LoggingJob.set(wait_until: Date.tomorrow.noon).perform_later
     end
   end
 
@@ -97,11 +159,13 @@ class EnqueuedJobsTest < ActiveJob::TestCase
       end
     end
 
-    assert_raise ActiveSupport::TestCase::Assertion do
+    error = assert_raise ActiveSupport::TestCase::Assertion do
       assert_enqueued_with(job: NestedJob, queue: 'low') do
         NestedJob.perform_later
       end
     end
+
+    assert_equal 'No enqueued job found with {:job=>NestedJob, :queue=>"low"}', error.message
   end
 
   def test_assert_enqueued_job_args
@@ -114,8 +178,6 @@ class EnqueuedJobsTest < ActiveJob::TestCase
 end
 
 class PerformedJobsTest < ActiveJob::TestCase
-  setup { queue_adapter.perform_enqueued_jobs = true }
-
   def test_assert_performed_jobs
     assert_nothing_raised do
       assert_performed_jobs 1 do
@@ -141,22 +203,31 @@ class PerformedJobsTest < ActiveJob::TestCase
 
   def test_assert_performed_jobs_with_no_block
     assert_nothing_raised do
-      HelloJob.perform_later('rafael')
+      perform_enqueued_jobs do
+        HelloJob.perform_later('rafael')
+      end
       assert_performed_jobs 1
     end
 
     assert_nothing_raised do
-      HelloJob.perform_later('aaron')
-      HelloJob.perform_later('matthew')
-      assert_performed_jobs 3
+      perform_enqueued_jobs do
+        HelloJob.perform_later('aaron')
+        HelloJob.perform_later('matthew')
+        assert_performed_jobs 3
+      end
+    end
+  end
+
+  def test_assert_no_performed_jobs_with_no_block
+    assert_nothing_raised do
+      assert_no_performed_jobs
     end
   end
 
   def test_assert_no_performed_jobs
     assert_nothing_raised do
       assert_no_performed_jobs do
-        # Scheduled jobs are being enqueued in this context
-        HelloJob.set(wait_until: Date.tomorrow.noon).perform_later('godfrey')
+        # empty block won't perform jobs
       end
     end
   end
